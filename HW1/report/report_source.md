@@ -145,20 +145,20 @@ Where:
 
 | Year | Annual Adopters (M) | Cumulative (M) | Market Penetration |
 |------|---------------------|----------------|-------------------|
-| 2024 | 0.90 | 0.90 | 1.8% |
-| 2026 | 2.24 | 4.60 | 9.2% |
-| 2028 | 4.69 | 12.62 | 25.2% |
-| 2030 | 6.76 | 25.37 | 50.7% |
-| **2031** | **6.83** | **32.20** | **64.4%** |
-| 2034 | 4.51 | 48.54 | 97.1% |
-| 2038 | 1.44 | 58.16 | 116.3% |
+| 2024 | 0 | 0 | 0% |
+| 2026 | 1.4 | 2.24 | 4.48% |
+| 2028 | 3.33 | 7.7 | 15.5% |
+| 2030 | 6 | 18.46 | 36.9% |
+| **2031** | **6.77** | **25.2** | **50.46%** |
+| 2034 | 4.34 | 41.9 | 83.8% |
+| 2038 | 0.75 | 48.9 | 97.8% |
 
 ### Key Milestones
 
 - **Peak year:** 2031 (7 years after launch)
-- **Peak annual sales:** 6.83 million units
+- **Peak annual sales:** 6.77 million units
 - **50% market penetration:** 2030 (6 years)
-- **Market saturation (90%):** 2034 (10 years)
+- **Market saturation (90%):** 2035 (11 years)
 
 ### Visualization
 
@@ -188,9 +188,9 @@ Three scenarios tested with different market potential assumptions:
 
 | Scenario | M (millions) | 2030 Cumulative | Peak Year | Peak Sales (M) |
 |----------|--------------|-----------------|-----------|----------------|
-| Pessimistic | 25 | 13.4M | 2030 | 3.4 |
-| **Base Case** | **50** | **25.4M** | **2031** | **6.8** |
-| Optimistic | 75 | 40.2M | 2031 | 10.3 |
+| Pessimistic | 25 | 12.61M | 2030 | 3.4 |
+| **Base Case** | **50** | **25.23M** | **2031** | **6.77** |
+| Optimistic | 75 | 37.8M | 2031 | 10.3 |
 
 ![Sensitivity Analysis](../img/sensitivity_analysis.png)
 
@@ -200,7 +200,7 @@ Three scenarios tested with different market potential assumptions:
 
 ---
 
-## 8. Conclusions
+## Conclusions
 
 ### Main Findings
 
@@ -212,20 +212,3 @@ Three scenarios tested with different market potential assumptions:
 
 4. **Social proof critical:** Success depends on visibility, word-of-mouth, and creating products people want to be seen wearing
 
-### Strategic Implications
-
-**For Manufacturers:**
-- Focus marketing on influencers and testimonials, not traditional advertising
-- Scale production capacity for 2027-2032 growth phase (3-7M units/year)
-- Leverage wrist-worn visibility to maximize social proof
-
-**For Market Entry:**
-- Enter before 2027 to capture growth phase
-- After 2030, market becomes saturated
-
-**For Forecasting:**
-- Bass Model reliably predicts wearable adoption with 99% accuracy
-- Peak occurs 6-7 years after launch consistently
-- Social dynamics (p, q) more important than market size (M)
-
----
