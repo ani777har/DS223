@@ -1,0 +1,14 @@
+BASS MODEL PARAMETERS
+==================================================
+
+Estimated from: Fitbit sales data (2010-2023)
+Applied to: Masimo W1 Medical Watch
+
+p (innovation): 0.013079 ± 0.002890
+q (imitation):  0.523600 ± 0.054366
+M (Fitbit):     144.04 ± 4.82 million
+M (Masimo W1):  50.00 million
+
+Model Fit Quality:
+R² = 0.9942
+RMSE = 4.0323 million units
