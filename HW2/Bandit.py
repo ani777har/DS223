@@ -636,6 +636,9 @@ def comparison(
     Saves:
     - `algorithm_comparison.png` (cumulative reward & regret curves)
     - `combined_results.csv` (row-wise concat of both per-trial CSVs)
+    
+    Regret is computed as the difference between optimal expected reward and
+    the actual observed reward at each trial (instantaneous regret).
     """
     _ensure_output_dirs()
     logger.info("Comparing algorithm performances")
@@ -644,8 +647,9 @@ def comparison(
     ts_cumulative = np.cumsum(ts_rewards)
 
     optimal_reward = float(np.max(bandit_rewards))
-    eg_regret = np.cumsum([optimal_reward - float(bandit_rewards[i]) for i in eg_selected])
-    ts_regret = np.cumsum([optimal_reward - float(bandit_rewards[i]) for i in ts_selected])
+    # Instantaneous regret based on actual observed rewards
+    eg_regret = np.cumsum([optimal_reward - r for r in eg_rewards])
+    ts_regret = np.cumsum([optimal_reward - r for r in ts_rewards])
 
     viz = Visualization()
     viz.plot2(eg_cumulative, ts_cumulative, eg_regret, ts_regret)
