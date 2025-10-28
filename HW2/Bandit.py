@@ -8,8 +8,8 @@ experiment results as CSV files.
 
 The reward model here uses a Gaussian observation model where each arm `i`
 returns a reward distributed as N(p_i, 1/precision). For Epsilon-Greedy,
-`precision` is implicitly 1 (unit variance); for Thompson Sampling, it is
-configurable per bandit instance.
+`precision` is implicitly 1 (unit variance); for Thompson Sampling, it uses
+Bayesian conjugate updates with Normal prior.
 
 Notes
 -----
@@ -29,7 +29,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from typing import List, Sequence, Tuple
-from pathlib import Path  # <-- added
+from pathlib import Path
 
 from loguru import logger
 import numpy as np
@@ -37,9 +37,11 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 
-# --- New: centralized output folders ---
+# --- Centralized output folders ---
 IMG_DIR = Path("img")
 REPORT_DIR = Path("report")
+
+
 def _ensure_output_dirs() -> None:
     """Create output directories if missing."""
     IMG_DIR.mkdir(parents=True, exist_ok=True)
@@ -158,7 +160,7 @@ class Visualization:
         algorithm_name : str
             Name used in titles and filename (e.g., "Epsilon-Greedy").
         """
-        _ensure_output_dirs()  # ensure folders exist
+        _ensure_output_dirs()
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
 
         for i, bandit in enumerate(bandits):
@@ -189,7 +191,7 @@ class Visualization:
         ax2.grid(True, alpha=0.3)
 
         plt.tight_layout()
-        out = IMG_DIR / f"{algorithm_name}_performance.png"  # changed path
+        out = IMG_DIR / f"{algorithm_name}_performance.png"
         plt.savefig(out, dpi=300, bbox_inches="tight")
         plt.close()
         logger.info(f"Performance plot saved to {out}")
@@ -234,7 +236,7 @@ class Visualization:
         ax2.grid(True, alpha=0.3)
 
         plt.tight_layout()
-        out = IMG_DIR / "algorithm_comparison.png"  # changed path
+        out = IMG_DIR / "algorithm_comparison.png"
         plt.savefig(out, dpi=300, bbox_inches="tight")
         plt.close()
         logger.info(f"Comparison plot saved to {out}")
@@ -383,12 +385,10 @@ class EpsilonGreedy(Bandit):
                 "Algorithm": "EpsilonGreedy",
             }
         )
-        # --- changed path: CSV to ./report
         csv_path = REPORT_DIR / "epsilon_greedy_results.csv"
         df.to_csv(csv_path, index=False)
         logger.info(f"Results saved to {csv_path}")
 
-        # --- NEW: also write the printed summary to a text file in ./report
         lines = []
         lines.append("\n" + "=" * 60)
         lines.append("EPSILON-GREEDY ALGORITHM RESULTS")
@@ -405,10 +405,8 @@ class EpsilonGreedy(Bandit):
             lines.append(f"  Bandit {i+1} (p={bandit.p}): {count} times ({percentage:.2f}%)")
         lines.append("=" * 60 + "\n")
 
-        # Print to console (unchanged behavior)
         print("\n".join(lines))
 
-        # Save to txt
         txt_path = REPORT_DIR / "epsilon_greedy_report.txt"
         with txt_path.open("w", encoding="utf-8") as f:
             f.write("\n".join(lines))
@@ -418,86 +416,91 @@ class EpsilonGreedy(Bandit):
 
 
 class ThompsonSampling(Bandit):
-    """Thompson Sampling bandit with Beta-Bernoulli pseudo-update on sign.
+    """Thompson Sampling bandit with Gaussian observation model.
 
     Parameters
     ----------
     p : float
         True mean reward of this arm.
     precision : float, default=1.0
-        Precision (inverse variance) of the Gaussian observation model.
+        Precision (inverse variance) of the Gaussian observation model (tau).
 
     Notes
     -----
-    This implementation samples an arm via Beta(alpha, beta) per step
-    using a simple sign-based surrogate to increment `alpha` (if reward > 0)
-    or `beta` (if reward <= 0). This keeps the algorithm illustrative while
-    using Gaussian rewards. For a fully consistent Gaussian-TS, one would
-    maintain Normal-Gamma (or Normal-Inverse-Gamma) posteriors.
+    This implementation uses a Normal prior for the mean with parameters:
+    - m: posterior mean (initially 0)
+    - lambda_: posterior precision (initially 1, updated as lambda_ += tau)
+    The posterior is updated using Bayesian conjugate updates for Gaussian likelihood
+    with known precision.
     """
 
     def __init__(self, p: float, precision: float = 1.0) -> None:
         self.p = float(p)
-        self.precision = float(precision)
-        self.alpha = 1  # Prior successes
-        self.beta_param = 1  # Prior failures
+        self.tau = float(precision)  # Known precision of observations
+        self.m = 0.0  # Posterior mean (prior is N(0,1))
+        self.lambda_ = 1.0  # Posterior precision (prior precision = 1)
         self.N = 0
+        self.sum_x = 0.0  # Sum of observed rewards
         self.reward_history: List[float] = []
         self.mean_estimate = 0.0
-        logger.debug(f"ThompsonSampling bandit initialized with p={p}, precision={precision}")
+        logger.debug(f"ThompsonSampling bandit initialized with p={p}, tau={precision}")
 
     def __repr__(self) -> str:
         return (
-            f"ThompsonSampling(p={self.p:.3f}, alpha={self.alpha}, "
-            f"beta={self.beta_param}, N={self.N})"
+            f"ThompsonSampling(p={self.p:.3f}, m={self.m:.3f}, "
+            f"lambda={self.lambda_:.3f}, N={self.N})"
         )
 
     def pull(self) -> float:
-        """Sample reward from N(p, 1/precision).
+        """Sample reward from N(p, 1/tau).
 
         Returns
         -------
         float
             Observed reward.
         """
-        reward = float(np.random.randn() / np.sqrt(self.precision) + self.p)
+        reward = float(np.random.randn() / np.sqrt(self.tau) + self.p)
         logger.debug(f"Pulled arm with p={self.p}, got reward={reward:.3f}")
         return reward
 
     def sample(self) -> float:
-        """Draw a Thompson sample from the Beta posterior.
+        """Draw a Thompson sample from the Normal posterior.
 
         Returns
         -------
         float
-            A single Beta(alpha, beta) sample used for arm selection.
+            A sample from N(m, 1/lambda_) used for arm selection.
         """
-        return float(np.random.beta(self.alpha, self.beta_param))
+        return float(np.random.randn() / np.sqrt(self.lambda_) + self.m)
 
     def update(self, x: float) -> None:
-        """Update internal state given an observation.
+        """Update posterior parameters using Bayesian conjugate update.
 
         Parameters
         ----------
         x : float
             Observed reward.
+        
+        Notes
+        -----
+        Updates posterior N(m, 1/lambda_) where:
+        - lambda_ (precision) increases by tau with each observation
+        - m (mean) is the weighted average of prior and observations
         """
         self.N += 1
-        self.mean_estimate = ((self.N - 1) * self.mean_estimate + x) / self.N
+        self.lambda_ += self.tau
+        self.sum_x += x
+        self.m = (self.tau * self.sum_x) / self.lambda_
+        self.mean_estimate = self.m
 
-        if x > 0:
-            self.alpha += 1
-        else:
-            self.beta_param += 1
-
-        logger.debug(f"Updated parameters: alpha={self.alpha}, beta={self.beta_param}")
+        logger.debug(f"Updated parameters: m={self.m:.3f}, lambda={self.lambda_:.3f}")
 
     def experiment(
         self, bandits: Sequence[Bandit], num_trials: int
     ) -> Tuple[List[float], List[int]]:
         """Run Thompson Sampling across all arms.
 
-        At each step, sample one value from each arm's Beta posterior and pick
+        At each step, sample one value from each arm's Normal posterior and pick
         the arm with the highest sample.
 
         Parameters
@@ -576,12 +579,10 @@ class ThompsonSampling(Bandit):
                 "Algorithm": "ThompsonSampling",
             }
         )
-        # --- changed path: CSV to ./report
         csv_path = REPORT_DIR / "thompson_sampling_results.csv"
         df.to_csv(csv_path, index=False)
         logger.info(f"Results saved to {csv_path}")
 
-        # --- NEW: also write the printed summary to a text file in ./report
         lines = []
         lines.append("\n" + "=" * 60)
         lines.append("THOMPSON SAMPLING ALGORITHM RESULTS")
@@ -598,10 +599,8 @@ class ThompsonSampling(Bandit):
             lines.append(f"  Bandit {i+1} (p={bandit.p}): {count} times ({percentage:.2f}%)")
         lines.append("=" * 60 + "\n")
 
-        # Print to console (unchanged behavior)
         print("\n".join(lines))
 
-        # Save to txt
         txt_path = REPORT_DIR / "thompson_sampling_report.txt"
         with txt_path.open("w", encoding="utf-8") as f:
             f.write("\n".join(lines))
@@ -651,7 +650,6 @@ def comparison(
     viz = Visualization()
     viz.plot2(eg_cumulative, ts_cumulative, eg_regret, ts_regret)
 
-    # --- changed path: combined CSV to ./report
     df_combined = pd.concat(
         [
             pd.read_csv(REPORT_DIR / "epsilon_greedy_results.csv"),
@@ -665,7 +663,7 @@ def comparison(
 
 
 if __name__ == "__main__":
-    _ensure_output_dirs()  # make sure folders exist before running
+    _ensure_output_dirs()
     logger.info("Starting A/B Testing Experiment")
 
     BANDIT_REWARDS = [1, 2, 3, 4]

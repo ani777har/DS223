@@ -3,14 +3,14 @@
 THOMPSON SAMPLING ALGORITHM RESULTS
 ============================================================
 Total Trials: 20000
-Cumulative Reward: 78357.50
-Average Reward: 3.9179
-Cumulative Regret: 1745.00
-Average Regret: 0.0872
+Cumulative Reward: 79896.25
+Average Reward: 3.9948
+Cumulative Regret: 276.00
+Average Regret: 0.0138
 
 Bandit Selection Counts:
-  Bandit 1 (p=1.0): 6 times (0.03%)
-  Bandit 2 (p=2.0): 5 times (0.03%)
-  Bandit 3 (p=3.0): 1717 times (8.58%)
-  Bandit 4 (p=4.0): 18272 times (91.36%)
+  Bandit 1 (p=1.0): 3 times (0.01%)
+  Bandit 2 (p=2.0): 11 times (0.06%)
+  Bandit 3 (p=3.0): 245 times (1.23%)
+  Bandit 4 (p=4.0): 19741 times (98.70%)
 ============================================================

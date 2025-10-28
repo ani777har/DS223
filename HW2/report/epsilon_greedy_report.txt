@@ -3,14 +3,14 @@
 EPSILON-GREEDY ALGORITHM RESULTS
 ============================================================
 Total Trials: 20000
-Cumulative Reward: 79890.15
-Average Reward: 3.9945
-Cumulative Regret: 16.00
-Average Regret: 0.0008
+Cumulative Reward: 59947.96
+Average Reward: 2.9974
+Cumulative Regret: 20017.00
+Average Regret: 1.0009
 
 Bandit Selection Counts:
-  Bandit 1 (p=1.0): 3 times (0.01%)
-  Bandit 2 (p=2.0): 2 times (0.01%)
-  Bandit 3 (p=3.0): 3 times (0.01%)
-  Bandit 4 (p=4.0): 19992 times (99.96%)
+  Bandit 1 (p=1.0): 4 times (0.02%)
+  Bandit 2 (p=2.0): 9 times (0.04%)
+  Bandit 3 (p=3.0): 19987 times (99.94%)
+  Bandit 4 (p=4.0): 0 times (0.00%)
 ============================================================
