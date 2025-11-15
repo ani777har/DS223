@@ -12,15 +12,16 @@ The dataset contains:
 
 ## Project Structure 
 ```
-├── survival_analysis.py     
-├── requirements.txt          
-├── README.md                 
-├── report.md                 
 ├── data/
-│   └── telecom_churn.csv    
-└── outputs/
+│   └── telco.csv    
+└── img/
     ├── survival_curves.png   
-    └── clv_distribution.png  
+    └── clv_distribution.png
+├── README.md                   
+├── report/
+│   └── report_source.md  
+├── requirements.txt     
+├── survival_analysis.py     
 ```
 
 ## Installation & Running the Analysis
